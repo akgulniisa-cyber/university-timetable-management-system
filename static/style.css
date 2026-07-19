@@ -1,0 +1,163 @@
+:root {
+    --app-bg: linear-gradient(135deg, #f7ecef 0%, #ead6dc 52%, #dbc0ca 100%);
+    --nav-bg: #5a0f2e;
+    --nav-bg-soft: #74153d;
+    --accent: #8b1e3f;
+    --accent-strong: #67152f;
+    --accent-soft: #f1dbe2;
+    --text-main: #35131c;
+    --text-muted: #7a5862;
+    --border-soft: rgba(90, 18, 39, 0.12);
+    --card-shadow: 0 20px 48px rgba(90, 18, 39, 0.16);
+}
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: var(--app-bg);
+    min-height: 100vh;
+    color: var(--text-main);
+}
+
+.app-navbar {
+    background: linear-gradient(90deg, var(--nav-bg) 0%, var(--nav-bg-soft) 100%);
+    box-shadow: 0 10px 24px rgba(90, 18, 39, 0.24);
+}
+
+.hero-card,
+.content-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 22px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-soft);
+}
+
+.stat-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f8eaee 100%);
+    border-radius: 22px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-soft);
+    border-left: 5px solid var(--accent);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 54px rgba(90, 18, 39, 0.2);
+}
+
+.section-kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.hero-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.empty-state {
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
+    background: #fbf4f6;
+    border: 1px dashed #c79aa8;
+    color: var(--text-muted);
+}
+
+.table thead th {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+.flash-stack .alert {
+    border-radius: 16px;
+}
+
+.btn {
+    border-radius: 12px;
+}
+
+.btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+}
+
+.btn-outline-primary {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-outline-dark {
+    color: var(--accent-strong);
+    border-color: var(--accent-strong);
+}
+
+.btn-outline-dark:hover,
+.btn-outline-dark:focus {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+}
+
+.text-secondary {
+    color: var(--text-muted) !important;
+}
+
+.badge.text-bg-light {
+    background: var(--accent-soft) !important;
+    color: var(--accent-strong) !important;
+}
+
+.stat-card .display-6 {
+    font-size: 2.6rem;
+    line-height: 1;
+}
+
+
+@media print {
+    body {
+        background: #ffffff;
+    }
+
+    .no-print,
+    .btn,
+    .flash-stack,
+    .navbar {
+        display: none !important;
+    }
+
+    .content-card,
+    .hero-card,
+    .stat-card {
+        box-shadow: none;
+        border: 1px solid #d9d9d9;
+        background: #ffffff;
+    }
+
+    .print-area,
+    .print-table {
+        page-break-inside: avoid;
+    }
+
+    main.container {
+        max-width: 100%;
+        padding: 0;
+    }
+}

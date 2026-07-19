@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration | Gestion d'emploi du temps{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="content-card p-4">
+            <p class="section-kicker mb-2">Etape 1</p>
+            <h1 class="h3 mb-3">Configuration de la formation</h1>
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.training_name.label(class="form-label") }}
+                    {{ form.training_name(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.td_groups.label(class="form-label") }}
+                    {{ form.td_groups(class="form-control", min="1") }}
+                </div>
+                <div class="mb-4">
+                    {{ form.tp_groups.label(class="form-label") }}
+                    {{ form.tp_groups(class="form-control", min="1") }}
+                </div>
+                {{ form.submit(class="btn btn-primary w-100") }}
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="content-card p-4 h-100">
+            <p class="section-kicker mb-2">Etat actuel</p>
+            <h2 class="h4 mb-3">Configuration enregistree</h2>
+            {% if training %}
+            <table class="table align-middle mb-0">
+                <tbody>
+                    <tr><th>Nom</th><td>{{ training.training_name }}</td></tr>
+                    <tr><th>Groupes TD</th><td>{{ training.td_groups }}</td></tr>
+                    <tr><th>Groupes TP</th><td>{{ training.tp_groups }}</td></tr>
+                    <tr><th>Groupes CM</th><td>1 promotion complete</td></tr>
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">Aucune configuration enregistree.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

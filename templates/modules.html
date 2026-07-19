@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Modules | Gestion d'emploi du temps{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="content-card p-4">
+            <p class="section-kicker mb-2">Etape 2</p>
+            <h1 class="h3 mb-3">{{ 'Modifier le module' if editing_module else 'Ajouter un module' }}</h1>
+            <form method="POST" novalidate action="{{ url_for('edit_module', module_id=editing_module.id) if editing_module else url_for('manage_modules') }}">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">{{ form.module_code.label(class="form-label") }}{{ form.module_code(class="form-control") }}</div>
+                <div class="mb-3">{{ form.module_name.label(class="form-label") }}{{ form.module_name(class="form-control") }}</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">{{ form.cm_hours.label(class="form-label") }}{{ form.cm_hours(class="form-control", min="0") }}</div>
+                    <div class="col-md-4">{{ form.td_hours.label(class="form-label") }}{{ form.td_hours(class="form-control", min="0") }}</div>
+                    <div class="col-md-4">{{ form.tp_hours.label(class="form-label") }}{{ form.tp_hours(class="form-control", min="0") }}</div>
+                </div>
+                {{ form.submit(class="btn btn-primary w-100", value='Mettre a jour' if editing_module else 'Enregistrer') }}
+            </form>
+            {% if editing_module %}
+            <a href="{{ url_for('manage_modules') }}" class="btn btn-link mt-2 px-0">Annuler la modification</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-xl-8">
+        <div class="content-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="section-kicker mb-1">Maquette</p>
+                    <h2 class="h4 mb-0">Modules enregistres</h2>
+                </div>
+                <span class="badge text-bg-light">{{ modules|length }} module(s)</span>
+            </div>
+            {% if modules %}
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Libelle</th>
+                            <th>CM</th>
+                            <th>TD</th>
+                            <th>TP</th>
+                            <th class="text-end no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for module in modules %}
+                        <tr>
+                            <td class="fw-semibold">{{ module.module_code }}</td>
+                            <td>{{ module.module_name }}</td>
+                            <td>{{ module.cm_hours }}h</td>
+                            <td>{{ module.td_hours }}h</td>
+                            <td>{{ module.tp_hours }}h</td>
+                            <td class="text-end no-print">
+                                <a href="{{ url_for('edit_module', module_id=module.id) }}" class="btn btn-sm btn-outline-primary me-2">Modifier</a>
+                                <form method="POST" action="{{ url_for('delete_module', module_id=module.id) }}" class="d-inline">
+                                    {{ delete_form.csrf_token }}
+                                    <input type="hidden" name="target_id" value="{{ module.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">No modules yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil | My EDT Planner{% endblock %}
+
+{% block content %}
+<div class="hero-card p-4 p-lg-5 mb-4">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-8">
+            <p class="section-kicker mb-2">Application Flask</p>
+            <h1 class="display-5 fw-bold mb-2">My EDT Planner</h1>
+            <p class="hero-subtitle mb-3">Custom planning system developed with Flask</p>
+            <p class="lead text-secondary mb-4">
+                Configurez la formation, ajoutez les modules, affectez les enseignants et planifiez les seances sans depasser les quotas.
+            </p>
+            {% if training %}
+            <div class="alert alert-success mb-0">
+                Formation active : <strong>{{ training.training_name }}</strong>, {{ training.td_groups }} groupes TD, {{ training.tp_groups }} groupes TP.
+            </div>
+            {% else %}
+            <div class="alert alert-warning mb-0">
+                Aucune formation configuree pour le moment. Commencez par la configuration.
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-4">
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('configure') }}" class="btn btn-primary btn-lg">Configurer la formation</a>
+                <a href="{{ url_for('manage_modules') }}" class="btn btn-outline-primary btn-lg">Gerer les modules</a>
+                <a href="{{ url_for('manage_instructors') }}" class="btn btn-outline-primary btn-lg">Gerer les enseignants</a>
+                <a href="{{ url_for('manage_schedule') }}" class="btn btn-outline-dark btn-lg">Ouvrir le planning</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-3"><div class="stat-card p-4 h-100"><div class="text-secondary">Modules</div><div class="display-6 fw-bold">{{ stats.modules }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card p-4 h-100"><div class="text-secondary">Enseignants</div><div class="display-6 fw-bold">{{ stats.instructors }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card p-4 h-100"><div class="text-secondary">Affectations</div><div class="display-6 fw-bold">{{ stats.assignments }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card p-4 h-100"><div class="text-secondary">Seances</div><div class="display-6 fw-bold">{{ stats.sessions }}</div></div></div>
+</div>
+{% endblock %}

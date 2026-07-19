@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Enseignants | Gestion d'emploi du temps{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="content-card p-4 mb-4">
+            <p class="section-kicker mb-2">Etape 3A</p>
+            <h1 class="h4 mb-3">{{ 'Modifier un enseignant' if editing_instructor else 'Ajouter un enseignant' }}</h1>
+            <form method="POST" novalidate action="{{ url_for('edit_instructor', instructor_id=editing_instructor.id) if editing_instructor else url_for('manage_instructors') }}">
+                {{ instructor_form.hidden_tag() }}
+                <div class="mb-3">{{ instructor_form.instructor_name.label(class="form-label") }}{{ instructor_form.instructor_name(class="form-control") }}</div>
+                <div class="mb-4">{{ instructor_form.instructor_surname.label(class="form-label") }}{{ instructor_form.instructor_surname(class="form-control") }}</div>
+                {{ instructor_form.submit(class="btn btn-primary w-100", value='Mettre a jour' if editing_instructor else 'Ajouter') }}
+            </form>
+            {% if editing_instructor %}
+            <a href="{{ url_for('manage_instructors') }}" class="btn btn-link mt-2 px-0">Annuler la modification</a>
+            {% endif %}
+        </div>
+
+        <div class="content-card p-4">
+            <p class="section-kicker mb-2">Etape 3B</p>
+            <h2 class="h4 mb-3">{{ 'Modifier une affectation' if editing_assignment else 'Affecter les heures' }}</h2>
+            <form method="POST" novalidate action="{{ url_for('edit_assignment', assignment_id=editing_assignment.id) if editing_assignment else url_for('manage_instructors') }}">
+                {{ assignment_form.hidden_tag() }}
+                <div class="mb-3">{{ assignment_form.module_id.label(class="form-label") }}{{ assignment_form.module_id(class="form-select") }}</div>
+                <div class="mb-3">{{ assignment_form.instructor_id.label(class="form-label") }}{{ assignment_form.instructor_id(class="form-select") }}</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">{{ assignment_form.cm_hours.label(class="form-label") }}{{ assignment_form.cm_hours(class="form-control", min="0", step="0.5") }}</div>
+                    <div class="col-md-4">{{ assignment_form.td_hours.label(class="form-label") }}{{ assignment_form.td_hours(class="form-control", min="0", step="0.5") }}</div>
+                    <div class="col-md-4">{{ assignment_form.tp_hours.label(class="form-label") }}{{ assignment_form.tp_hours(class="form-control", min="0", step="0.5") }}</div>
+                </div>
+                {{ assignment_form.submit(class="btn btn-outline-primary w-100", value='Mettre a jour' if editing_assignment else 'Mettre a jour') }}
+            </form>
+            {% if editing_assignment %}
+            <a href="{{ url_for('manage_instructors') }}" class="btn btn-link mt-2 px-0">Annuler la modification</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <div class="content-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="section-kicker mb-1">Ressources</p>
+                    <h2 class="h4 mb-0">Enseignants enregistres</h2>
+                </div>
+                <span class="badge text-bg-light">{{ instructors|length }} enseignant(s)</span>
+            </div>
+            {% if instructors %}
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Nom</th><th>Prenom</th><th class="text-end no-print">Actions</th></tr></thead>
+                    <tbody>
+                        {% for instructor in instructors %}
+                        <tr>
+                            <td>{{ instructor.instructor_name }}</td>
+                            <td>{{ instructor.instructor_surname }}</td>
+                            <td class="text-end no-print">
+                                <a href="{{ url_for('edit_instructor', instructor_id=instructor.id) }}" class="btn btn-sm btn-outline-primary me-2">Modifier</a>
+                                <form method="POST" action="{{ url_for('delete_instructor', instructor_id=instructor.id) }}" class="d-inline">
+                                    {{ delete_form.csrf_token }}
+                                    <input type="hidden" name="target_id" value="{{ instructor.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">No instructors yet.</div>
+            {% endif %}
+        </div>
+
+        <div class="content-card p-4 mb-4">
+            <p class="section-kicker mb-1">Controle</p>
+            <h2 class="h4 mb-3">Equilibre maquette / affectations</h2>
+            {% if assignment_rows %}
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr><th>Module</th><th>CM</th><th>TD</th><th>TP</th><th>Statut</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for row in assignment_rows %}
+                        <tr>
+                            <td>{{ row.module.module_code }}</td>
+                            <td>{{ row.allocated.CM }} / {{ row.expected.CM }}h</td>
+                            <td>{{ row.allocated.TD }} / {{ row.expected.TD }}h</td>
+                            <td>{{ row.allocated.TP }} / {{ row.expected.TP }}h</td>
+                            <td>
+                                <span class="badge {{ 'text-bg-success' if row.balanced else 'text-bg-warning' }}">
+                                    {{ 'OK' if row.balanced else 'A verifier' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">Aucun module a controler.</div>
+            {% endif %}
+        </div>
+
+        <div class="content-card p-4">
+            <p class="section-kicker mb-1">Affectations</p>
+            <h2 class="h4 mb-3">Repartition detaillee</h2>
+            {% if assignments %}
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Module</th><th>Enseignant</th><th>CM</th><th>TD</th><th>TP</th><th class="text-end no-print">Actions</th></tr></thead>
+                    <tbody>
+                        {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.module.module_code }}</td>
+                            <td>{{ assignment.instructor.full_name }}</td>
+                            <td>{{ assignment.cm_hours }}h</td>
+                            <td>{{ assignment.td_hours }}h</td>
+                            <td>{{ assignment.tp_hours }}h</td>
+                            <td class="text-end no-print">
+                                <a href="{{ url_for('edit_assignment', assignment_id=assignment.id) }}" class="btn btn-sm btn-outline-primary me-2">Modifier</a>
+                                <form method="POST" action="{{ url_for('delete_assignment', assignment_id=assignment.id) }}" class="d-inline">
+                                    {{ delete_form.csrf_token }}
+                                    <input type="hidden" name="target_id" value="{{ assignment.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">Aucune affectation enregistree.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

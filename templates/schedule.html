@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Planning | Gestion d'emploi du temps{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+        <p class="section-kicker mb-1">Etape 4</p>
+        <h1 class="h3 mb-0">Planification des seances</h1>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('export_schedule') }}" class="btn btn-outline-primary">Exporter CSV</a>
+        <button type="button" class="btn btn-outline-dark" onclick="window.print()">Imprimer / PDF</button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-4 no-print">
+        <div class="content-card p-4">
+            <h2 class="h4 mb-3">{{ 'Modifier une seance' if editing_entry else 'Nouvelle seance' }}</h2>
+            <form method="POST" novalidate id="schedule-form" action="{{ url_for('edit_schedule_entry', entry_id=editing_entry.id) if editing_entry else url_for('manage_schedule') }}" data-td-groups="{{ training.td_groups if training else 1 }}" data-tp-groups="{{ training.tp_groups if training else 1 }}" data-selected-group="{{ form.group_code.data or '' }}">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">{{ form.module_id.label(class="form-label") }}{{ form.module_id(class="form-select") }}</div>
+                <div class="mb-3">{{ form.instructor_id.label(class="form-label") }}{{ form.instructor_id(class="form-select") }}</div>
+                <div class="mb-3">{{ form.session_type.label(class="form-label") }}{{ form.session_type(class="form-select") }}</div>
+                <div class="mb-3">{{ form.group_code.label(class="form-label") }}{{ form.group_code(class="form-select") }}</div>
+                <div class="mb-3">{{ form.date.label(class="form-label") }}{{ form.date(class="form-control") }}</div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">{{ form.start_time.label(class="form-label") }}{{ form.start_time(class="form-control") }}</div>
+                    <div class="col-md-6">{{ form.duration.label(class="form-label") }}{{ form.duration(class="form-control", min="0.5", step="0.5") }}</div>
+                </div>
+                <div class="mb-4">
+                    <label for="calculated-end-time" class="form-label">Heure de fin calculee</label>
+                    <input type="text" id="calculated-end-time" class="form-control" readonly>
+                </div>
+                {{ form.submit(class="btn btn-primary w-100", value='Mettre a jour' if editing_entry else 'Planifier') }}
+            </form>
+            {% if editing_entry %}
+            <a href="{{ url_for('manage_schedule') }}" class="btn btn-link mt-2 px-0">Annuler la modification</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <div class="content-card p-4 mb-4">
+            <p class="section-kicker mb-1">Controle des quotas</p>
+            <h2 class="h4 mb-3">Comparaison maquette / heures planifiees</h2>
+            {% if planning_rows %}
+            <div class="table-responsive">
+                <table class="table align-middle print-table">
+                    <thead><tr><th>Module</th><th>CM</th><th>TD</th><th>TP</th><th>Statut</th></tr></thead>
+                    <tbody>
+                        {% for row in planning_rows %}
+                        <tr>
+                            <td>{{ row.module.module_code }}</td>
+                            <td>{{ row.placed.CM }} / {{ row.quotas.CM }}h</td>
+                            <td>{{ row.placed.TD }} / {{ row.quotas.TD }}h</td>
+                            <td>{{ row.placed.TP }} / {{ row.quotas.TP }}h</td>
+                            <td><span class="badge {{ 'text-bg-success' if row.complete else 'text-bg-danger' }}">{{ 'OK' if row.complete else 'Depassement' }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">Aucun module a comparer pour le moment.</div>
+            {% endif %}
+        </div>
+
+        <div class="content-card p-4 print-area">
+            <p class="section-kicker mb-1">Planning</p>
+            <h2 class="h4 mb-3">Seances enregistrees</h2>
+            {% if entries %}
+            <div class="table-responsive">
+                <table class="table align-middle print-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Module</th>
+                            <th>Enseignant</th>
+                            <th>Type</th>
+                            <th>Groupe</th>
+                            <th>Debut</th>
+                            <th>Fin</th>
+                            <th>Duree</th>
+                            <th class="text-end no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                        <tr>
+                            <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ entry.module.module_code }}</td>
+                            <td>{{ entry.instructor.full_name }}</td>
+                            <td>{{ entry.session_type }}</td>
+                            <td>{{ entry.group_code }}</td>
+                            <td>{{ entry.start_time.strftime('%H:%M') }}</td>
+                            <td>{{ entry.end_time.strftime('%H:%M') }}</td>
+                            <td>{{ entry.duration }}h</td>
+                            <td class="text-end no-print">
+                                <a href="{{ url_for('edit_schedule_entry', entry_id=entry.id) }}" class="btn btn-sm btn-outline-primary me-2">Modifier</a>
+                                <form method="POST" action="{{ url_for('delete_schedule_entry', entry_id=entry.id) }}" class="d-inline">
+                                    {{ delete_form.csrf_token }}
+                                    <input type="hidden" name="target_id" value="{{ entry.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">No schedules yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const form = document.getElementById('schedule-form');
+    const sessionSelect = document.getElementById('schedule-session_type');
+    const groupSelect = document.getElementById('schedule-group_code');
+    const startTimeInput = document.getElementById('schedule-start_time');
+    const durationInput = document.getElementById('schedule-duration');
+    const endTimeOutput = document.getElementById('calculated-end-time');
+
+    function updateGroups() {
+        if (!form || !sessionSelect || !groupSelect) {
+            return;
+        }
+
+        const tdGroups = Number(form.dataset.tdGroups || 1);
+        const tpGroups = Number(form.dataset.tpGroups || 1);
+        const sessionType = sessionSelect.value;
+        const options = [];
+
+        if (sessionType === 'CM') {
+            options.push({ value: 'PROMO', label: 'Promotion complete' });
+        } else if (sessionType === 'TD') {
+            for (let index = 1; index <= tdGroups; index += 1) {
+                options.push({ value: `TD${index}`, label: `Groupe TD ${index}` });
+            }
+        } else {
+            for (let index = 1; index <= tpGroups; index += 1) {
+                options.push({ value: `TP${index}`, label: `Groupe TP ${index}` });
+            }
+        }
+
+        const selectedGroup = form.dataset.selectedGroup;
+        groupSelect.innerHTML = '';
+        options.forEach((optionData) => {
+            const option = document.createElement('option');
+            option.value = optionData.value;
+            option.textContent = optionData.label;
+            if (selectedGroup && selectedGroup === optionData.value) {
+                option.selected = true;
+            }
+            groupSelect.appendChild(option);
+        });
+    }
+
+    function updateEndTime() {
+        if (!startTimeInput || !durationInput || !endTimeOutput) {
+            return;
+        }
+
+        const startValue = startTimeInput.value;
+        const durationValue = Number(durationInput.value);
+        if (!startValue || !durationValue || durationValue <= 0) {
+            endTimeOutput.value = '';
+            return;
+        }
+
+        const [hours, minutes] = startValue.split(':').map(Number);
+        const totalMinutes = (hours * 60) + minutes + Math.round(durationValue * 60);
+        const endHours = String(Math.floor((totalMinutes % (24 * 60)) / 60)).padStart(2, '0');
+        const endMinutes = String(totalMinutes % 60).padStart(2, '0');
+        endTimeOutput.value = `${endHours}:${endMinutes}`;
+    }
+
+    updateGroups();
+    updateEndTime();
+
+    if (sessionSelect) {
+        sessionSelect.addEventListener('change', updateGroups);
+    }
+    if (startTimeInput) {
+        startTimeInput.addEventListener('input', updateEndTime);
+    }
+    if (durationInput) {
+        durationInput.addEventListener('input', updateEndTime);
+    }
+</script>
+{% endblock %}
